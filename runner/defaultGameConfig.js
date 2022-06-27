@@ -12,9 +12,11 @@ export default {
     default: 'matter',
     matter: {
         gravity: {
-            y: 0
+            y: 0,
+            x:0
         },
-        debug: false
+        
+        debug: true
     }
 },
 }

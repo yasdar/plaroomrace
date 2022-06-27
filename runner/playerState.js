@@ -44,6 +44,9 @@ export default class PlayerState extends SuperEventEmitter {
   }
 
   handleKeyDown(key) {
+   // console.log("handleKeyDown",key);
+    //console.log("handleKeyDown state",this);
+    this.KeyWas = key;
     this.handleInput({ keydown: key });
   }
 
@@ -60,7 +63,7 @@ export default class PlayerState extends SuperEventEmitter {
     Object.keys(data).forEach((i) => {
       const key = data[i];
       if (i === "keydown") this.inputState[key] = true;
-      if (i === "keyup") delete this.inputState[key];
+      if (i === "keyup") this.inputState[key] = false; //delete this.inputState[key];
       if (i === "dpad") this.inputState["dpad"] = data.dpad;
     });
     // we just emit the input event
@@ -70,6 +73,7 @@ export default class PlayerState extends SuperEventEmitter {
   isKeyDown(key) {
     return this.inputState[key];
   }
+  
 
   on(name, fn) {
     if (name === "profile") {

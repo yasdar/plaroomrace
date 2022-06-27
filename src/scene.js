@@ -3,15 +3,20 @@ import CommonGameScene from '../runner/gamescene';
 //import logoImg from './assets/logo.png';
 import sfxJoin from "./assets/playerjoin.mp3";
 import sfxPush from "./assets/push.mp3";
-import car from './assets/car.png';
 
-import Background from './assets/Backgound.png';
-import Ring from './assets/ringx0.6.png';
+import snd_hit1 from "./assets/snd_hit1.mp3";
+import snd_hole1 from "./assets/snd_hole1.mp3";
+import splashs from "./assets/splash.mp3";
 
-import x1 from './assets/x1.png';
-import x1_5 from './assets/x1_5.png';
-import x2 from './assets/x2.png';
-import x2_5 from './assets/x2_5.png';
+
+
+
+import Background from './assets/Background.png';
+import Hole from './assets/hole.png';
+import hole_flag from './assets/hole_flag.png';
+import golfball from './assets/golfball.png';
+import splash from './assets/splash.png';
+
 
 
 class MyGame extends CommonGameScene {
@@ -23,40 +28,51 @@ class MyGame extends CommonGameScene {
     super();
     this.playerNameTags = {};
     this.PlayersStartPositions=[];
+    this.HolePositions=[];
+    this.hole;
     this.player_index =0;
     this.BigText=null;
-    this.GameStart= false;
     this.GameOver = false;
-    this.GameSpeed = 1;
-
+    //this.bar=null;
+    this.allBall=[];
+    this.Teta=0;
+    this.CurrentPlayer = 0;
+    this.holeball;
+    this.waterSplash;
   }
 
   preload() {
    // this.load.image('logo', logoImg);
     this.load.audio("join", sfxJoin);
     this.load.audio("push", sfxPush);
+    this.load.audio("snd_hit1", snd_hit1);
+    this.load.audio("snd_hole1", snd_hole1);
+    this.load.audio("splashs", splashs);
+
+
 
     //game assets
     this.load.image("Background", Background);
-    this.load.image("Ring", Ring);
-    this.load.image("car", car);
+    this.load.image("Hole", Hole);
+    this.load.image("hole_flag", hole_flag);
+    this.load.image("golfball", golfball);
 
-    this.load.image("x1", x1);
-    this.load.image("x1_5", x1_5);
-    this.load.image("x2", x2);
-    this.load.image("x2_5", x2_5);
-
+    this.load.spritesheet("splash",splash,{ 
+                    frameWidth: 128/4,
+                    frameHeight: 32,
+                })
+    //this.load.image("bar", bar);
     let SJ={
       "generator_info": "Shape definitions generated with PhysicsEditor. Visit https://www.codeandweb.com/physicseditor",
-      "ringx0": {
+      "Background": {
         "type": "fromPhysicsEditor",
-        "label": "ringx0",
-        "isStatic": false,
+        "label": "water",
+        "isStatic": true,
         "density": 0.1,
         "restitution": 0,
         "friction": 0.1,
-        "frictionAir": 0.01,
-        "frictionStatic": 0.5,
+        "frictionAir": 0.55,
+        "frictionStatic": 1,
         "collisionFilter": {
           "group": 0,
           "category": 1,
@@ -64,129 +80,183 @@ class MyGame extends CommonGameScene {
         },
         "fixtures": [
           {
-            "label": "",
-            "isSensor": false,
+            "label": "water",
+            "isSensor": true,
             "vertices": [
-              [ { "x":210, "y":8 }, { "x":136, "y":4 }, { "x":145, "y":20 } ],
-              [ { "x":145, "y":20 }, { "x":136, "y":4 }, { "x":72, "y":33 }, { "x":35, "y":70 }, { "x":88, "y":59 } ],
-              [ { "x":88, "y":59 }, { "x":35, "y":70 }, { "x":47, "y":97 } ],
-              [ { "x":35, "y":70 }, { "x":6, "y":153 }, { "x":20, "y":156 }, { "x":47, "y":97 } ],
-              [ { "x":80, "y":674 }, { "x":152, "y":697 }, { "x":163, "y":687 }, { "x":100, "y":653 }, { "x":35, "y":628 } ],
-              [ { "x":0, "y":580 }, { "x":35, "y":628 }, { "x":22, "y":563 }, { "x":3, "y":494 }, { "x":-10, "y":498 } ],
-              [ { "x":20, "y":156 }, { "x":6, "y":153 }, { "x":-10, "y":210 }, { "x":2, "y":209 } ],
-              [ { "x":219, "y":701 }, { "x":163, "y":687 }, { "x":152, "y":697 } ],
-              [ { "x":100, "y":653 }, { "x":55, "y":609 }, { "x":35, "y":628 } ],
-              [ { "x":55, "y":609 }, { "x":22, "y":563 }, { "x":35, "y":628 } ],
-              [ { "x":-10, "y":498 }, { "x":3, "y":494 }, { "x":2, "y":209 }, { "x":-10, "y":210 } ]
+              [ { "x":1728, "y":127 }, { "x":1688, "y":97 }, { "x":1490, "y":74 }, { "x":1345, "y":132 }, { "x":1450, "y":277 }, { "x":1620, "y":265 }, { "x":1678, "y":227 }, { "x":1720, "y":182 } ],
+              [ { "x":1373, "y":77 }, { "x":1345, "y":132 }, { "x":1490, "y":74 } ],
+              [ { "x":1388, "y":260 }, { "x":1450, "y":277 }, { "x":1345, "y":132 }, { "x":1345, "y":197 } ],
+              [ { "x":1507, "y":289 }, { "x":1620, "y":265 }, { "x":1450, "y":277 } ]
             ]
           },
           {
-            "label": "",
-            "isSensor": false,
+            "label": "water",
+            "isSensor": true,
             "vertices": [
-              [ { "x":1342, "y":29 }, { "x":1263, "y":9 }, { "x":1299, "y":57 }, { "x":1335, "y":99 }, { "x":1368, "y":78 } ],
-              [ { "x":1317, "y":686 }, { "x":1363, "y":633 }, { "x":1287, "y":649 }, { "x":1235, "y":683 }, { "x":1226, "y":699 } ],
-              [ { "x":1400, "y":582 }, { "x":1397, "y":494 }, { "x":1384, "y":490 }, { "x":1365, "y":559 }, { "x":1363, "y":633 } ],
-              [ { "x":1168, "y":697 }, { "x":1226, "y":699 }, { "x":1235, "y":683 } ],
-              [ { "x":1177, "y":4 }, { "x":1240, "y":23 }, { "x":1263, "y":9 } ],
-              [ { "x":1240, "y":23 }, { "x":1299, "y":57 }, { "x":1263, "y":9 } ],
-              [ { "x":1335, "y":99 }, { "x":1367, "y":152 }, { "x":1394, "y":146 }, { "x":1368, "y":78 } ],
-              [ { "x":1367, "y":152 }, { "x":1385, "y":205 }, { "x":1397, "y":206 }, { "x":1394, "y":146 } ],
-              [ { "x":1287, "y":649 }, { "x":1363, "y":633 }, { "x":1332, "y":605 } ],
-              [ { "x":1332, "y":605 }, { "x":1363, "y":633 }, { "x":1365, "y":559 } ],
-              [ { "x":1397, "y":494 }, { "x":1397, "y":206 }, { "x":1385, "y":205 }, { "x":1384, "y":490 } ]
+              [ { "x":1619, "y":965 }, { "x":1545, "y":904 }, { "x":1483, "y":900 }, { "x":1400, "y":927 }, { "x":1308, "y":980 }, { "x":1173, "y":1135 }, { "x":1558, "y":1147 }, { "x":1606, "y":1032 } ],
+              [ { "x":1692, "y":1515 }, { "x":1690, "y":1452 }, { "x":1625, "y":1350 }, { "x":1315, "y":1522 }, { "x":1460, "y":1555 }, { "x":1653, "y":1553 } ],
+              [ { "x":1625, "y":1350 }, { "x":1570, "y":1255 }, { "x":1173, "y":1135 }, { "x":1145, "y":1277 }, { "x":1160, "y":1392 }, { "x":1223, "y":1475 }, { "x":1315, "y":1522 } ],
+              [ { "x":1570, "y":1255 }, { "x":1558, "y":1147 }, { "x":1173, "y":1135 } ],
+              [ { "x":1218, "y":1057 }, { "x":1173, "y":1135 }, { "x":1308, "y":980 } ]
             ]
           },
           {
-            "label": "",
-            "isSensor": false,
+            "label": "water",
+            "isSensor": true,
             "vertices": [
-              [ { "x":145, "y":3 }, { "x":213, "y":8 }, { "x":1231, "y":3 }, { "x":1219, "y":-16 }, { "x":160, "y":-25 } ]
+              [ { "x":3471, "y":729 }, { "x":3525, "y":745 }, { "x":3590, "y":755 }, { "x":3655, "y":757 }, { "x":3575, "y":525 }, { "x":3476, "y":669 } ],
+              [ { "x":3945, "y":905 }, { "x":3988, "y":842 }, { "x":4003, "y":707 }, { "x":3945, "y":532 }, { "x":3681, "y":449 }, { "x":3808, "y":837 }, { "x":3840, "y":892 }, { "x":3878, "y":919 } ],
+              [ { "x":3756, "y":419 }, { "x":3681, "y":449 }, { "x":3945, "y":532 }, { "x":3863, "y":457 } ],
+              [ { "x":3655, "y":757 }, { "x":3745, "y":772 }, { "x":3681, "y":449 }, { "x":3628, "y":477 }, { "x":3575, "y":525 } ],
+              [ { "x":3990, "y":607 }, { "x":3945, "y":532 }, { "x":4003, "y":707 } ],
+              [ { "x":3745, "y":772 }, { "x":3808, "y":837 }, { "x":3681, "y":449 } ]
             ]
           },
           {
-            "label": "",
-            "isSensor": false,
+            "label": "water",
+            "isSensor": true,
             "vertices": [
-              [ { "x":170, "y":699 }, { "x":185, "y":727 }, { "x":1244, "y":718 }, { "x":1256, "y":699 }, { "x":238, "y":694 } ]
+              [ { "x":2866, "y":2338 }, { "x":2829, "y":2252 }, { "x":2762, "y":2167 }, { "x":2675, "y":2113 }, { "x":2552, "y":2080 }, { "x":2472, "y":2099 }, { "x":2213, "y":2338 } ],
+              [ { "x":2401, "y":2122 }, { "x":2335, "y":2178 }, { "x":2287, "y":2228 }, { "x":2248, "y":2277 }, { "x":2213, "y":2338 }, { "x":2472, "y":2099 } ]
             ]
           }
         ]
       }
     }
     
+    
     this.load.json('shapes', SJ);
   }
 
   create() {
     super.create();
-    this.CreateRace();
+    this.CreateMap();
+
+    //prepare sounds
+    this.sound.add('join', {volume: 1});
+    this.sound.add('push', {volume: 1});
+    this.sound.add('snd_hit1', {volume: 1});
+    this.sound.add('snd_hole1', {volume: 1});
+    this.sound.add('splashs', {volume: 1});
+
+
+    this.matter.world.on('collisionstart', (event,bodyA,bodyB)=> {
+
+ 
+       console.log('bodyA',bodyA.label)
+       console.log('bodyB',bodyB.label)
+      if(bodyB.label.indexOf("Circle Body") != -1 && bodyA.label=="water"){
+        bodyB.parent.gameObject.setFrictionAir(0.07);
+        
+        bodyB.parent.gameObject.setData({'focus':'on'})
+        this.time.addEvent({ delay: 1000, callback: ()=>{
+          this.GoBack(bodyB.parent.gameObject);
+        }, callbackScope: this, loop: false });
+      }
+       else if (bodyB.label.indexOf("Circle Body") != -1 && bodyA.label=="hole"){
+       // console.log(bodyB.parent.gameObject)
+        console.log(bodyB.parent.gameObject.getData('name')+' Win!');
+        this.BigText.setText(bodyB.parent.gameObject.getData('name')+' Win!');
+        bodyB.parent.gameObject.setVelocity(0,0);
+        bodyB.parent.gameObject.setPosition(this.hole.x,this.hole.y);
+        
+        this.sound.play("snd_hole1");
+        //hide all speed/rotaions effect
+        this.allBall.forEach ( (ball)=>{
+        ball.setData({'focus':'on'})
+        });
+        bodyB.parent.gameObject.setDepth(6);
+
+        this.Zoom();
+        this.GameOver = true;
+       }
+     
+     },this);
   }
 
   addPlayerSprite(playerState, profile) {
    // console.log("addPlayerSprite",playerState, profile,this.players);
-    console.log('addPlayerSprite , this.player_index',this.player_index)
-   
-    const sprite = this.matter.add.sprite(0,0, 'car','',{label: 'car'+(this.player_index+1).toString() }).setScale(0.5);
+   // console.log('addPlayerSprite , this.player_index',this.player_index)
+
+   // console.log('playerState' , playerState)
+    //console.log('profile' ,profile)
+  
+
+let COLOR = 0xffffff;
+  if(profile.color =='red'){COLOR=0xff0000;} 
+  if(profile.color =='blue'){COLOR=0x0000ff;} 
+  if(profile.color =='green'){COLOR=0x00ff00;} 
+   if(profile.color =='yellow'){COLOR=0xffff00;} 
+
+
+    const sprite = this.matter.add.sprite(0,0, 'golfball','').setScale(0.25);
     sprite.setPosition(
       this.PlayersStartPositions[this.player_index].x,
       this.PlayersStartPositions[this.player_index].y);
       this.player_index++;
       
-      sprite.setFrictionAir(0.1);
-      sprite.setMass(30);
-      sprite.setFixedRotation();
-      sprite.setFrictionStatic(1)     
-      sprite.setName(playerState.id);
-     // console.log(sprite)
-     
+      sprite.setBody({
+        type: 'circle',
+        radius: 14
+    });
 
+      sprite.setFrictionAir(0.01);
+      sprite.setMass(3);
+      sprite.setFixedRotation();  
+      sprite.setName(playerState.id);
+      sprite.setBounce(1);
+      sprite.setCollidesWith([this.holeball]);
+      sprite.setTint(COLOR);
+     //small circle rotate around
+    let ind = this.add.sprite(sprite.x,sprite.y,'golfball').setScale(0.06);
+    ind.setTint(0xffffff);
+    ind.setAlpha(1)
     // add text for player name
     var style = {
       font: "24px Arial",
       fill: "#ffffff",
       wordWrap: true,
       align: "center",
-     /* backgroundColor: "#ffffff",
-      padding: {
-        left: 5,
-        right: 5,
-        top: 2,
-        bottom: 2,
-      },*/
     };
-
     var text = this.add.text(
-      sprite.x-sprite.displayWidth*0.75,
+      sprite.x,
       sprite.y,
       profile.name+"\nL:0",
       style
     );
     text.setOrigin(0.5, 0.5);
-
-    sprite.setData({laps:0,player_name:profile.name,player_id:playerState.id})
-   
-
     this.playerNameTags[playerState.id] = text;
-
-    this.sound.play("join");
-
-    if(this.player_index == 5){
-
-     if( !this.GameStart ) {
-      //start count down animation
-      this.time.addEvent({ delay: 600, callback:()=>{ this.BigText.setText('3'); this.Zoom(); } , callbackScope: this, loop: false });
-      this.time.addEvent({ delay: 1200, callback:()=>{ this.BigText.setText('2'); this.Zoom(); }, callbackScope: this, loop: false });
-      this.time.addEvent({ delay: 1800, callback: ()=>{ this.BigText.setText('1'); this.Zoom(); }, callbackScope: this, loop: false });
-      this.time.addEvent({ delay: 2400, callback: ()=>{ this.BigText.setText('Go!'); this.Zoom(); }, callbackScope: this, loop: false });
-      this.time.addEvent({ delay: 3000, callback: ()=>{ this.BigText.setText(''); this.BigText.setScale(1); this.GameStart = true; }, callbackScope: this, loop: false });
-     }
-
-    }
-
   
 
+    sprite.setData({name:profile.name, X:sprite.x,Y:sprite.y,'focus':'off',Graphic:this.add.graphics(),Linep:100,_ind:ind,laps:0,player_name:profile.name,player_id:playerState.id})
+   
+    this.allBall.push(sprite);
+    this.sound.play("join");
+
+   
+
+    
+
     return sprite;
+  }
+  GoBack(sp){
+     //play water animation
+     this.waterSplash.setPosition(sp.x,sp.y)
+     this.waterSplash.setVisible(true);
+
+     this.sound.play("splashs");
+
+     sp.setVisible(false);
+      this.time.addEvent({ delay: 1000, callback: ()=>{
+      if( !this.GameOver){sp.setData({'focus':'off'})}
+      this.waterSplash.setVisible(false);
+      sp.setVelocity(0,0);
+      sp.setPosition(sp.getData('X'),sp.getData('Y'));
+      sp.setVisible(true);
+      sp.setFrictionAir(0.01);
+
+    }, callbackScope: this, loop: false });
+    
   }
   Zoom(){
       this.BigText.setScale(4);
@@ -202,14 +272,11 @@ class MyGame extends CommonGameScene {
   }
   shuffle(array) {
     let currentIndex = array.length,  randomIndex;
-  
     // While there remain elements to shuffle.
     while (currentIndex != 0) {
-  
       // Pick a remaining element.
       randomIndex = Math.floor(Math.random() * currentIndex);
       currentIndex--;
-  
       // And swap it with the current element.
       [array[currentIndex], array[randomIndex]] = [
         array[randomIndex], array[currentIndex]];
@@ -217,28 +284,156 @@ class MyGame extends CommonGameScene {
   
     return array;
   }
+
+  looping(){
+    this.Teta+=(3*Math.PI*0.0025);
+    for( let b=0 ; b <this.allBall.length; b++){
+      let p =  this.allBall[b];
+      let ind = p.getData('_ind');
+      let Linep = parseInt(p.getData('Linep')) ;
+      let Graphic =  p.getData('Graphic');
+
+      let opacityline = 0.4;
+
+
+      if( p.body.velocity.x != 0 || p.body.velocity.y != 0 || this.GameOver){
+        ind.setVisible(false);
+        opacityline = 0;
+        Graphic.clear();
+      }
+
+
+      if(p.getData('focus') == 'off'){
+        ind.setPosition(p.x+96*Math.cos(this.Teta),p.y+96*Math.sin(this.Teta));
+        p.setVelocity(0,0);
+        ind.setVisible(true);
+        opacityline = 0;
+      }
+
+        
+
+        
+
+          if(p.getData('focus') == 'on' && p.body.velocity.x == 0 && p.body.velocity.y == 0){
+            if(Linep>90){ Linep+=1; }else{ Linep+=2; }//correction for the speed
+            if(Linep>110){Linep =10;}
+    
+            p.setData({'Linep':Linep});
+              Graphic.clear();
+              Graphic.lineStyle(6, 0xff0000, opacityline);
+              let pinit = 18;
+              let pfinal = 70;
+    
+                let Xi= p.x+pinit*Math.cos(this.Teta);
+                let Yi= p.y+pinit*Math.sin(this.Teta);
+                let Xii= p.x+(pinit+(pfinal*Linep/100))*Math.cos(this.Teta);
+                let Yii= p.y+(pinit+(pfinal*Linep/100))*Math.sin(this.Teta);
+
+
+            ind.setPosition(p.x+96*Math.cos(   p.getData('MyAngle')),p.y+96*Math.sin(   p.getData('MyAngle')));
+            Xi= p.x+pinit*Math.cos(   p.getData('MyAngle'));
+            Yi= p.y+pinit*Math.sin(   p.getData('MyAngle'));
+            Xii= p.x+(pinit+(pfinal*Linep/100))*Math.cos(   p.getData('MyAngle'));
+            Yii= p.y+(pinit+(pfinal*Linep/100))*Math.sin(   p.getData('MyAngle'));
+            p.setData({'Shoot':true});
+
+            var L = new Phaser.Geom.Line(Xi,Yi,Xii,Yii);
+            Graphic.strokeLineShape(L);
+          }
+          
+         
+    } 
+  }
+  Actions(profile){
+    this.CurrentPlayer  = parseInt(profile.name.replace('Player ',''))-1; 
+    let p = this.allBall[this.CurrentPlayer];
+    if(p.getData('focus') == 'on'){return;}
+
+    p.setData({X:p.x,Y:p.y});
+
+    let ind = p.getData('_ind');
+
+
+    p.setData({'focus':'on',MyAngle:Phaser.Math.Angle.Between(p.x,p.y,ind.x,ind.y)});
+    console.log('--------- action----------')
+   // console.log('profile',profile.name);
+   // console.log('power',Linep);
+  }ShootNow(profile){
+
+    this.CurrentPlayer  = parseInt(profile.name.replace('Player ',''))-1; 
+
+    let p = this.allBall[this.CurrentPlayer];
+    let Linep = parseInt(p.getData('Linep')) ;
+ 
+    if( p.getData('Shoot') ){
+      console.log(p.getData('Shoot'),'---------ShootNow----------');
+      this.sound.play("snd_hit1");
+      p.setData({'Shoot':false})
+      let Vx = Linep*0.1*Math.cos(   p.getData('MyAngle') );
+      let Vy = Linep*0.1*Math.sin(   p.getData('MyAngle') );
+      console.log("power",Linep)
+      p.setVelocity(Vx,Vy);
+      let SC = p.scaleX;
+      this.tweens.add({
+        targets: p,
+        scale: SC*1.1,
+        delay:10,
+        ease: 'Bounce.easeOut',
+        duration: Linep*5,
+        yoyo:true,
+        repeat:1
+      });
+      
+      //50*Linep
+      this.time.addEvent({ delay: 30*Linep, callback: ()=>{
+        if( !this.GameOver){ p.setData({'focus':'off'});}
+      }, callbackScope: this, loop: false });
+    }
+
+
+
+  }
   
   updateCommon(playerId, sprite, state) {
     const profile = state.getState("profile");
-    const speed = 10;
-    if( !this.GameStart || this.GameOver){return;}
+
+    if(  this.GameOver){return;}
    
+   // console.log(state)
     if (state.isKeyDown("left")) {
-     // sprite.x -= speed;
-     sprite.setAngularVelocity(-0.1);
+    
+     state.KeyIsDown = true;
+      this.Actions(profile);
+     
+    }else{
+      if(state.KeyIsDown && state.KeyWas=="left" ){
+        state.KeyIsDown = false; console.log('-----> onUp l',state); this.ShootNow(profile);}
     }
+   
     if (state.isKeyDown("right")) {
-     // sprite.setVelocityX(speed);
-     //sprite.x += speed;
-     sprite.setAngularVelocity(0.1);
+     // this.Actions(profile);
+     state.KeyIsDown = true;
+    }else{
+      if(state.KeyIsDown && state.KeyWas=="right" ){
+        state.KeyIsDown = false; console.log('-----> onUp r',state)}
     }
+
+
     if (state.isKeyDown("up")) {
-      //sprite.y -= speed;
-      sprite.thrust(0.1*this.GameSpeed);
+      //this.Actions(profile);
+      state.KeyIsDown = true;
+    }else{
+      if(state.KeyIsDown && state.KeyWas=="up" ){
+        state.KeyIsDown = false; console.log('-----> onUp u',state)}
     }
+
+
     if (state.isKeyDown("down")) {
-      //sprite.y += speed;
-      sprite.thrustBack(0.1*this.GameSpeed);
+      //this.Actions(profile);
+      state.KeyIsDown = true;
+    }else{
+      if(state.KeyIsDown && state.KeyWas=="down" ){
+        state.KeyIsDown = false; console.log('-----> onUp d',state)}
     }
 
   
@@ -247,7 +442,7 @@ class MyGame extends CommonGameScene {
       this.sound.play("push");
     }
 
-    this.playerNameTags[playerId].x = sprite.x-sprite.displayWidth*0.75,
+    this.playerNameTags[playerId].x = sprite.x-sprite.displayWidth*2,
     this.playerNameTags[playerId].y = sprite.y;
 
   }
@@ -263,65 +458,119 @@ class MyGame extends CommonGameScene {
 
 
   /***************game code  ****************/
-  CreateRace(){
-    console.log('CreateRace')
+  CreateMap(){
+    console.log('CreateMap');
+   let _w = this.cameras.main.width;
+   let _h = this.cameras.main.height;
+   this.holeball = this.matter.world.nextCategory();
 
-    //background image
+
+
+   //custom world bounds
+    this.CreateWall(_w*0.5,-8,_w+64, 32);
+    this.CreateWall(_w*0.5,_h+8,_w+64, -32);
+    this.CreateWall(_w+8,_h*0.5,32, _h+64);
+    this.CreateWall(-12,_h*0.5,32, _h+64);
+
+
+
+
+
+
+
+
+    //background image : used as refrence
     let BG = this.add.image(0,0,'Background').setOrigin(0,0);
-    //backgrund fit the canvas
     BG.setDisplaySize(this.cameras.main.width,this.cameras.main.height);
+    BG.setVisible(false);
 
- //ring
   var shapes = this.cache.json.get('shapes');
- // console.log(shapes)
-  let Ring = this.matter.add.sprite(0, 0, 'Ring', null, { isStatic: true,shape: shapes.ringx0 });
-  Ring.setPosition(this.cameras.main.width*0.5,this.cameras.main.height*0.5);
-   //rectangle inside the ring
-   this.matter.add.rectangle(Ring.x-Ring.displayWidth*0.015, Ring.y-Ring.displayHeight*0.01, Ring.displayWidth*0.57, Ring.displayHeight*0.16, { 
-    isStatic: true,chamfer: { radius: [10,10,10,10] }
- });
+  // console.log(shapes)
+   let water = this.matter.add.sprite(
+    this.cameras.main.width*0.45,
+    this.cameras.main.height*0.5, 
+    'Background', 
+    null, {shape: shapes.Background });
 
+   water.setScale(BG.displayWidth/BG.width);
+   water.setCollisionCategory(this.holeball);
 
- this.matter.add.rectangle(Ring.x-Ring.displayWidth*0.17, Ring.y-Ring.displayHeight*0.27,16
-  , Ring.displayHeight*0.4, { 
-    isSensor: true, label: 'startline' }
-);
+   // water.setVisible(false);
+    console.log("water",water.body.parts)
+    this.PlayersStartPositions=[
+      {
+      x:BG.x+BG.displayWidth*0.1,
+      y:BG.x+BG.displayHeight*0.2,
+      },
+      {
+      x:BG.x+BG.displayWidth*0.2,
+      y:BG.x+BG.displayHeight*0.85,
+      },
+      {
+       x:BG.x+BG.displayWidth*0.45,
+       y:BG.x+BG.displayHeight*0.5,
+      },
+      {
+       x:BG.x+BG.displayWidth*0.8,
+       y:BG.x+BG.displayHeight*0.05,
+      },
+      {
+       x:BG.x+BG.displayWidth*0.7,
+       y:BG.x+BG.displayHeight*0.65,
+      }
+  ]
 
+  this.PlayersStartPositions = this.shuffle(this.PlayersStartPositions);
 
-this.matter.add.rectangle(Ring.x+Ring.displayWidth*0.2, Ring.y+Ring.displayHeight*0.28,16
-  , Ring.displayHeight*0.4, { 
-    isSensor: true, label: 'checkline' }
-);
+  this.hole = this.matter.add.sprite(0,0, 'Hole');
+  var Bodies = Phaser.Physics.Matter.Matter.Bodies;
+  var circleD = Bodies.circle(0,0, 28, { isSensor: true, label: 'hole',isStatic:true });
+  this.hole.setExistingBody(circleD);
 
+  this.hole.setCollisionCategory(this.holeball);
+  
+  this.HolePositions=[
+    {
+      x:BG.x+BG.displayWidth*0.19,
+      y:BG.x+BG.displayHeight*0.52,
+    },
+    {
+      x:BG.x+BG.displayWidth*0.54,
+      y:BG.x+BG.displayHeight*0.76,
+    },
+    {
+      x:BG.x+BG.displayWidth*0.78,
+      y:BG.x+BG.displayHeight*0.9,
+    },
+    {
+      x:BG.x+BG.displayWidth*0.67,
+      y:BG.x+BG.displayHeight*0.23,
+    },
+    {
+      x:BG.x+BG.displayWidth*0.9,
+      y:BG.x+BG.displayHeight*0.4,
+    },
+  ];
+  //random position of the hole
+  this.HolePositions = this.shuffle(this.HolePositions);
+  this.hole.setPosition(this.HolePositions[0].x,this.HolePositions[0].y)
 
+  let hole_flag = this.add.image(0,0,'hole_flag').setOrigin(0,1);
+  hole_flag.setScale(0.75,0.75)
+  hole_flag.setPosition(this.hole.x,this.hole.y);
+  hole_flag.setDepth(5)
 
-this.matter.world.on('collisionstart', (event,bodyA,bodyB)=> {
-
- 
- // console.log('bodyA',bodyA.label)
- // console.log('bodyB',bodyB.label)
-  //if(bodyA) bodyA.gameObject.setTint(0xff0000);
-  //if(bodyB)  bodyB.gameObject.setTint(0x00ff00);
-
-  this.CheckRace(bodyA,bodyB);
-
-},this);
-  //this.matter.add.mouseSpring();
-
-
-
-  this.PlayersStartPositions=[
-    {x:Ring.x-Ring.displayWidth*0.22,y:Ring.y-Ring.displayHeight*0.45},
-    {x:Ring.x-Ring.displayWidth*0.22,y:Ring.y-Ring.displayHeight*0.30},
-    {x:Ring.x-Ring.displayWidth*0.22,y:Ring.y-Ring.displayHeight*0.15},
-
-    {x:Ring.x-Ring.displayWidth*0.38,y:Ring.y-Ring.displayHeight*0.30},
-    {x:Ring.x-Ring.displayWidth*0.38,y:Ring.y-Ring.displayHeight*0.15},
-
-    ];
-
-    //randomize positions
-    this.PlayersStartPositions = this.shuffle(this.PlayersStartPositions);
+this.waterSplash = this.add.sprite(200,200,'splash','0').setScale(2)
+this.anims.create({
+    key: "splashA",
+    frames: this.anims.generateFrameNumbers('splash', {
+        frames: ["0", "1", "2", "3"],
+    }),
+    frameRate: 8,
+    repeat: -1,
+});
+this.waterSplash.play('splashA');
+this.waterSplash.setVisible(false);
 
     var style = {
       font: "bold 54px Arial",
@@ -333,68 +582,23 @@ this.matter.world.on('collisionstart', (event,bodyA,bodyB)=> {
 
    
    this.BigText = this.add.text(
-    Ring.x-Ring.displayWidth*0.015,
-    Ring.y+Ring.displayHeight*0.25,
-    "First to complete 5 laps wins!",
+   this.cameras.main.width*0.5,
+   this.cameras.main.height*0.07,
+    "First to reach the hole wins",
     style);
+  
    this.BigText.setOrigin(0.5, 0.5);
 
 
-   
-
-   //sprre options
-   let Ts =this.add.text(140,100,'Speed Options:',{
-    font: "bold 32px Arial",
-    fill: "#000000",
-    align: "center",
-  });
-  Ts.setOrigin(0.5,0.5);
-
-  let bt1 = this.add.image(140,180,'x1').setInteractive();
-  let bt2 = this.add.image(140,260,'x1_5').setInteractive();
-  let bt3 = this.add.image(140,340,'x2').setInteractive();
-  let bt4 = this.add.image(140,420,'x2_5').setInteractive();
-  bt1.setScale(1.25);
-  bt1.on('pointerdown',()=>{ resetSpeedButtons(); bt1.setScale(1.25); this.GameSpeed = 1;})
-  bt2.on('pointerdown',()=>{ resetSpeedButtons(); bt2.setScale(1.25); this.GameSpeed = 1.5;})
-  bt3.on('pointerdown',()=>{ resetSpeedButtons(); bt3.setScale(1.25); this.GameSpeed = 2;})
-  bt4.on('pointerdown',()=>{ resetSpeedButtons(); bt4.setScale(1.25); this.GameSpeed = 2.5;})
-
-  let OptionsC = this.add.container(0,0,[Ts,bt1,bt2,bt3,bt4]);
- // OptionsC.setVisible(false);
-function resetSpeedButtons(){
-  bt1.setScale(1);  bt2.setScale(1); 
-  bt3.setScale(1);  bt4.setScale(1); 
-}
-
   }
-  
-  CheckRace(bodyA,bodyB){
-     // check if car check the line
-  if(bodyB.label.indexOf("car") != -1 && bodyA.label=="checkline"){
-   // console.log(bodyB.label,"pass check line")
-    bodyB.gameObject.setData({passcheckline:true});
+  CreateWall(x,y,w,h){
+   let wall = this.matter.add.sprite(0,0,'');
+   var Bodies = Phaser.Physics.Matter.Matter.Bodies;
+   var Rect = Bodies.rectangle(x,y,w,h, {label: 'wall',isStatic:true });
+   wall.setExistingBody(Rect);
+   wall.setCollisionCategory(this.holeball);
   }
-  //check if car made a turn
-if(bodyB.label.indexOf("car") != -1 && bodyA.label=="startline" ){
-  let _a = bodyB.gameObject.rotation - Math.round(bodyB.gameObject.rotation/Math.PI)*Math.PI;
-  //console.log('s1',_a)
-  if( _a> -Math.PI/2 && _a< Math.PI/2){
-    //console.log('s2',bodyB.gameObject.getData('passcheckline'))
-    if( bodyB.gameObject.getData('passcheckline') ){
-      bodyB.gameObject.setData({passcheckline:false});
-      bodyB.gameObject.setData({laps:parseInt(bodyB.gameObject.getData('laps'))+1});
-      console.log('@1',bodyB.gameObject.getData('player_name'))
-      console.log('@2',bodyB.gameObject.getData('laps'))
-      this.playerNameTags[bodyB.gameObject.getData('player_id')].setText(bodyB.gameObject.getData('player_name')+'\nL: '+bodyB.gameObject.getData('laps'))
-
-      //check end of the game
-      if(parseInt(bodyB.gameObject.getData('laps'))>=3){ this.GameOver = true; this.BigText.setText('Winner:'+bodyB.gameObject.getData('player_name'))}
-     
-    }
-  }
-}
-  }
+ 
  
 }
 
