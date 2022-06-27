@@ -163,7 +163,7 @@ class MyGame extends CommonGameScene {
         this.sound.play("snd_hole1");
         //hide all speed/rotaions effect
         this.allBall.forEach ( (ball)=>{
-        ball.setData({'focus':'on'})
+       if(ball!=null) {ball.setData({'focus':'on'})}
         });
         bodyB.parent.gameObject.setDepth(6);
 
@@ -287,8 +287,12 @@ let COLOR = 0xffffff;
 
   looping(){
     this.Teta+=(3*Math.PI*0.0025);
+   // console.log('looping ',this.allBall)
     for( let b=0 ; b <this.allBall.length; b++){
+     // console.log('looping this.allBall[b]',b, this.allBall)
+     if( this.allBall[b] != null && this.allBall[b].body) {
       let p =  this.allBall[b];
+
       let ind = p.getData('_ind');
       let Linep = parseInt(p.getData('Linep')) ;
       let Graphic =  p.getData('Graphic');
@@ -341,12 +345,13 @@ let COLOR = 0xffffff;
             Graphic.strokeLineShape(L);
           }
           
-         
+        }   
     } 
   }
   Actions(profile){
     this.CurrentPlayer  = parseInt(profile.name.replace('Player ',''))-1; 
     let p = this.allBall[this.CurrentPlayer];
+    if(p==null ){return;}
     if(p.getData('focus') == 'on'){return;}
 
     p.setData({X:p.x,Y:p.y});
@@ -363,8 +368,9 @@ let COLOR = 0xffffff;
     this.CurrentPlayer  = parseInt(profile.name.replace('Player ',''))-1; 
 
     let p = this.allBall[this.CurrentPlayer];
+    if(p == null){return;}
     let Linep = parseInt(p.getData('Linep')) ;
- 
+   
     if( p.getData('Shoot') ){
       console.log(p.getData('Shoot'),'---------ShootNow----------');
       this.sound.play("snd_hit1");
@@ -449,7 +455,11 @@ let COLOR = 0xffffff;
 
   handlePlayerQuit(playerState) {
     if (this.playerNameTags[playerState.id]) {
-      console.log('player quit');
+      console.log('player quit',playerState);
+      if( this.allBall[parseInt(playerState.id.replace('p',''))-1] ){
+        this.allBall[parseInt(playerState.id.replace('p',''))-1] = null;
+        console.log(this.allBall)
+      }
       this.player_index--;
       this.playerNameTags[playerState.id].destroy();
       delete this.playerNameTags[playerState.id];
@@ -603,3 +613,5 @@ this.waterSplash.setVisible(false);
 }
 
 export default MyGame;
+
+//problem about players index when removing a player

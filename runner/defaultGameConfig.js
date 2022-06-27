@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 export default {
   type: Phaser.AUTO,
-  parent: 'canvas-container',
+  parent: 'container',
   width: 1170 * (19.5 / 9),
   height: 1170,
   scale: {
@@ -16,7 +16,7 @@ export default {
             x:0
         },
         
-        debug: true
+        debug: false
     }
 },
 }
